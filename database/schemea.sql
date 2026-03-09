@@ -2,8 +2,8 @@
 --  Aptitude AI  ·  Database Schema + Seed Data
 -- ─────────────────────────────────────────────────────────
 
-CREATE DATABASE IF NOT EXISTS aptitude_ai;
-USE aptitude_ai;
+CREATE DATABASE IF NOT EXISTS 'Afridi2008$aptitude_ai';
+USE 'Afridi2008$aptitude_ai';
 
 -- Users
 CREATE TABLE IF NOT EXISTS users (
