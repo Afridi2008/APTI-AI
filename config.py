@@ -1,9 +1,9 @@
 # ── Database Configuration ────────────────────────────────────────────────────
 DB_CONFIG = {
-    "host":     "localhost",
-    "user":     "root",        # ← change to your MySQL username
+    "host":     "Afridi2008.mysql.pythonanywhere-services.com",
+    "user":     "Afridi2008",        # ← change to your MySQL username
     "password": "password",    # ← change to your MySQL password
-    "database": "aptitude_ai"
+    "database": "Afridi2008$aptitude_ai"
 }
 
 # ── LLM Configuration ─────────────────────────────────────────────────────────
