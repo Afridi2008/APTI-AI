@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ 'Sign Up' if mode == 'signup' else 'Login' }} — Apti-AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+    .auth-wrap {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+    .auth-card {
+      width: 100%; max-width: 420px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      box-shadow: var(--shadow);
+    }
+    .auth-logo {
+      font-family: var(--font-head); font-weight: 800; font-size: 1.5rem;
+      text-align: center; margin-bottom: 1.5rem;
+    }
+    .auth-logo span { color: var(--accent); }
+    .auth-card h2 { text-align: center; margin-bottom: .3rem; }
+    .auth-sub { text-align: center; color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+    .divider { text-align: center; color: var(--muted); font-size: .85rem; margin: 1.2rem 0; }
+    .auth-switch { text-align: center; margin-top: 1.2rem; font-size: .9rem; color: var(--muted); }
+    .btn-full { width: 100%; justify-content: center; padding: .75rem; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="logo" href="/">Apti<span>AI</span></a>
+  <div class="nav-links"></div>
+</nav>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">Apti<span>AI</span></div>
+
+    {% if mode == 'signup' %}
+    <h2>Create Account</h2>
+    <p class="auth-sub">Start your aptitude journey today</p>
+    {% else %}
+    <h2>Welcome Back</h2>
+    <p class="auth-sub">Log in to continue practising</p>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    {% if mode == 'signup' %}
+    <form action="/signup" method="POST">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" name="name" placeholder="Arjun Kumar" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Min 6 characters" required minlength="6">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full mt-2">Create Account →</button>
+    </form>
+    <div class="auth-switch">Already have an account? <a href="/login">Log in</a></div>
+
+    {% else %}
+    <form action="/login" method="POST">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Your password" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full mt-2">Log In →</button>
+    </form>
+    <div class="auth-switch">Don't have an account? <a href="/signup">Sign up free</a></div>
+    {% endif %}
+  </div>
+</div>
+
+</body>
+</html>

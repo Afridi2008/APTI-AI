@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz — Apti-AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .quiz-page { padding: 2rem 1.5rem; }
+
+    /* ── Top bar ── */
+    .quiz-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .timer-wrap {
+      display: flex; align-items: center; gap: .5rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 99px; padding: .4rem 1rem;
+      font-family: var(--font-head); font-weight: 700; font-size: 1.1rem;
+    }
+    .progress-wrap { flex: 1; min-width: 200px; }
+    .progress-track {
+      height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--accent);
+      border-radius: 99px; width: 0%; transition: width .3s;
+    }
+    #progress-label { font-size: .8rem; color: var(--muted); margin-top: .3rem; }
+
+    /* ── Question card ── */
+    .question-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem;
+    }
+    .q-meta { display: flex; align-items: center; gap: .5rem; margin-bottom: .8rem; }
+    .q-number { font-family: var(--font-head); font-weight: 700; color: var(--accent); }
+    .q-text { font-size: 1.05rem; font-weight: 500; margin-bottom: 1rem; color: var(--text); }
+    .options-group { display: flex; flex-direction: column; gap: .5rem; }
+    .option-btn {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: .7rem 1rem;
+      text-align: left; cursor: pointer; color: var(--text);
+      font-family: var(--font-body); font-size: .95rem;
+      transition: all .15s;
+    }
+    .option-btn:hover  { border-color: var(--accent2); background: rgba(56,189,248,.07); }
+    .option-btn.selected {
+      border-color: var(--accent); background: rgba(245,166,35,.1);
+      color: var(--accent); font-weight: 500;
+    }
+
+    /* ── Submit bar ── */
+    .submit-bar {
+      position: sticky; bottom: 0;
+      background: rgba(11,15,26,.9); backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border); padding: 1rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .submit-note { font-size: .85rem; color: var(--muted); }
+
+    /* ── Results ── */
+    #result-section { display: none; padding: 2rem 0; }
+
+    .score-hero {
+      text-align: center; margin-bottom: 2.5rem;
+    }
+    .score-ring-wrap {
+      display: inline-block;
+      margin: 1rem auto;
+    }
+    .score-ring {
+      --pct: 0;
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--accent) calc(var(--pct) * 1%),
+        var(--border) calc(var(--pct) * 1%)
+      );
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .score-ring::after {
+      content: "";
+      width: 104px; height: 104px;
+      background: var(--bg); border-radius: 50%;
+      position: absolute;
+    }
+    .score-inner {
+      position: relative; z-index: 1; text-align: center;
+    }
+    .score-inner .score-num {
+      font-family: var(--font-head); font-weight: 800; font-size: 1.6rem; color: var(--accent);
+    }
+    .score-inner .score-pct { font-size: .8rem; color: var(--muted); }
+
+    .result-card { margin-top: 1rem; }
+    .result-header { display: flex; gap: .5rem; margin-bottom: .5rem; flex-wrap: wrap; }
+    .result-question { color: var(--text); font-weight: 500; }
+    .result-options { display: flex; flex-direction: column; gap: .3rem; margin-top: .5rem; }
+    .result-opt {
+      padding: .5rem .8rem; border-radius: 8px; font-size: .9rem;
+      background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    }
+    .opt-correct { background: rgba(34,197,94,.12); border-color: var(--success); color: var(--success); font-weight: 500; }
+    .opt-wrong   { background: rgba(239,68,68,.12);  border-color: var(--danger);  color: var(--danger);  }
+
+    .explain-wrap { margin-top: .8rem; }
+    .ai-explanation {
+      background: rgba(56,189,248,.07); border: 1px solid rgba(56,189,248,.25);
+      border-radius: 10px; padding: 1rem; color: var(--text);
+      font-size: .9rem; line-height: 1.7; margin-top: .5rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="logo" href="/dashboard">Apti<span>AI</span></a>
+  <div class="nav-links">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/logout" class="btn btn-outline" style="padding:.4rem .9rem">Logout</a>
+  </div>
+</nav>
+
+<!-- ── QUIZ ──────────────────────────────────────────────────── -->
+<div id="quiz-section" class="container quiz-page">
+
+  <div class="quiz-topbar">
+    <div>
+      <h2>{{ topic }} Quiz</h2>
+      <p class="text-muted" style="font-size:.85rem">{{ questions|length }} questions · 10 minutes</p>
+    </div>
+    <div class="timer-wrap">
+      ⏱ <span id="timer">10:00</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+      <div id="progress-label">0 / {{ questions|length }} answered</div>
+    </div>
+  </div>
+
+  {% for q in questions %}
+  <div class="question-card" data-qid="{{ q.id }}">
+    <div class="q-meta">
+      <span class="q-number">Q{{ loop.index }}</span>
+      <span class="badge badge-blue">{{ q.topic }}</span>
+    </div>
+    <div class="q-text">{{ q.question }}</div>
+    <div class="options-group" role="radiogroup">
+      <button class="option-btn" data-value="option1" aria-checked="false">{{ q.option1 }}</button>
+      <button class="option-btn" data-value="option2" aria-checked="false">{{ q.option2 }}</button>
+      <button class="option-btn" data-value="option3" aria-checked="false">{{ q.option3 }}</button>
+      <button class="option-btn" data-value="option4" aria-checked="false">{{ q.option4 }}</button>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+<!-- Sticky submit bar -->
+<div class="submit-bar" id="submit-bar">
+  <span class="submit-note">You can review & change answers before submitting.</span>
+  <button id="submit-btn" class="btn btn-primary" onclick="submitQuiz()">Submit Answers →</button>
+</div>
+
+<!-- ── RESULTS ────────────────────────────────────────────────── -->
+<div id="result-section" class="container">
+  <div class="score-hero">
+    <h2>Quiz Complete!</h2>
+    <div class="score-ring-wrap">
+      <div class="score-ring" id="score-ring">
+        <div class="score-inner">
+          <div class="score-num" id="score-display">—</div>
+          <div class="score-pct" id="score-percent">—</div>
+        </div>
+      </div>
+    </div>
+    <p id="score-msg" class="mt-1" style="font-size:1.1rem; color:var(--text)"></p>
+    <div class="flex-center gap-2 mt-3">
+      <a href="/quiz" class="btn btn-outline">Try Another →</a>
+      <a href="/dashboard" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+  </div>
+
+  <h3 class="mt-2">Answer Breakdown</h3>
+  <div id="breakdown"></div>
+  <div style="height:4rem"></div>
+</div>
+
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+<script>
+  startTimer(600);
+  updateProgress();
+
+  // Hide sticky bar when results shown
+  const origRender = renderResults;
+  renderResults = function(data) {
+    origRender(data);
+    document.getElementById("submit-bar").style.display = "none";
+  };
+</script>
+
+</body>
+</html>

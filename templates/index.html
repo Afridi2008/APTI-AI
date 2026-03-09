@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apti-AI — Smarter Aptitude Prep</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    /* ── Hero ── */
+    .hero {
+      min-height: calc(100vh - 64px);
+      display: flex; align-items: center;
+      padding: 4rem 1.5rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(245,166,35,.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-content { max-width: 600px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(245,166,35,.1); border: 1px solid rgba(245,166,35,.25);
+      color: var(--accent); padding: .3rem .9rem; border-radius: 99px;
+      font-size: .82rem; font-weight: 600; font-family: var(--font-head);
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 { line-height: 1.1; margin-bottom: 1.2rem; }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero p { font-size: 1.1rem; max-width: 480px; margin-bottom: 2rem; }
+    .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    .features {
+      padding: 5rem 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      max-width: 980px; margin: 0 auto;
+    }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: border-color .2s, transform .2s;
+    }
+    .feature-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .feature-icon { font-size: 2rem; margin-bottom: .8rem; }
+    .feature-card h3 { margin-bottom: .4rem; }
+
+    .section-divider {
+      text-align: center; padding: 2rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="logo">Apti<span>AI</span></div>
+  <div class="nav-links">
+    <a href="/login">Login</a>
+    <a href="/signup" class="btn btn-primary" style="padding:.45rem 1rem">Get Started</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-content container">
+    <div class="hero-eyebrow">✦ AI-Powered Aptitude Training</div>
+    <h1>Crack your<br><em>dream company</em><br>aptitude test.</h1>
+    <p>Practice quantitative, logical & verbal reasoning — then let AI explain every mistake in plain English.</p>
+    <div class="hero-cta">
+      <a href="/signup" class="btn btn-primary">Start Practising Free →</a>
+      <a href="/login"  class="btn btn-outline">I have an account</a>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider">
+  <h2>Why Apti-AI?</h2>
+</div>
+
+<div class="features">
+  <div class="feature-card">
+    <div class="feature-icon">🧠</div>
+    <h3>AI Explanations</h3>
+    <p>Every wrong answer gets a step-by-step explanation from an LLM tutor.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">⏱️</div>
+    <h3>Timed Tests</h3>
+    <p>Simulate real exam pressure with countdown timers per quiz.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">📊</div>
+    <h3>Weak-Area Dashboard</h3>
+    <p>Charts show exactly which topics need the most work.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🎯</div>
+    <h3>Topic Drill-Down</h3>
+    <p>Pick a specific topic — percentages, ratios, probability — and go deep.</p>
+  </div>
+</div>
+
+</body>
+</html>
