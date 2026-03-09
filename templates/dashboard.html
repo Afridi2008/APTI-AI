@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Apti-AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    .page { padding: 2.5rem 1.5rem; }
+    .welcome { margin-bottom: 2.5rem; }
+    .welcome p { font-size: 1rem; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem; margin-bottom: 2.5rem;
+    }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem 1.5rem;
+      text-align: center;
+    }
+    .stat-card .stat-val {
+      font-family: var(--font-head); font-size: 2rem; font-weight: 800;
+      color: var(--accent);
+    }
+    .stat-card .stat-label { color: var(--muted); font-size: .85rem; margin-top: .2rem; }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media(max-width:700px){ .dash-grid { grid-template-columns: 1fr; } }
+
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: .75rem; margin-top: 2rem;
+    }
+    .topic-btn {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 1rem .75rem;
+      text-align: center; cursor: pointer;
+      color: var(--text); font-family: var(--font-head); font-weight: 600;
+      font-size: .9rem; transition: all .2s; text-decoration: none;
+      display: block;
+    }
+    .topic-btn:hover {
+      border-color: var(--accent); color: var(--accent); transform: translateY(-2px);
+      text-decoration: none;
+    }
+    .topic-icon { font-size: 1.6rem; margin-bottom: .4rem; }
+
+    .recent-list { list-style: none; }
+    .recent-list li {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .65rem 0; border-bottom: 1px solid var(--border);
+      font-size: .9rem;
+    }
+    .recent-list li:last-child { border-bottom: none; }
+    .recent-score { font-family: var(--font-head); font-weight: 700; font-size: 1rem; }
+
+    .empty-state {
+      text-align: center; padding: 2rem; color: var(--muted); font-size: .9rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="logo" href="/dashboard">Apti<span>AI</span></a>
+  <div class="nav-links">
+    <a href="/dashboard" class="active">Dashboard</a>
+    <a href="/quiz">Practice</a>
+    <a href="/logout" class="btn btn-outline" style="padding:.4rem .9rem">Logout</a>
+  </div>
+</nav>
+
+<div class="container page">
+
+  <div class="welcome">
+    <h1>Hey, {{ name }} 👋</h1>
+    <p>Ready for today's practice? Pick a topic or take a mixed quiz.</p>
+  </div>
+
+  <!-- Stats row -->
+  {% set total_attempts = recent | length %}
+  {% set total_score = recent | sum(attribute='score') %}
+  {% set total_q     = recent | sum(attribute='total_questions') %}
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val">{{ total_attempts }}</div>
+      <div class="stat-label">Quizzes Taken</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">{{ total_q }}</div>
+      <div class="stat-label">Questions Answered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">
+        {% if total_q > 0 %}{{ ((total_score / total_q) * 100) | int }}%{% else %}—{% endif %}
+      </div>
+      <div class="stat-label">Overall Accuracy</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">{{ topic_stats | length }}</div>
+      <div class="stat-label">Topics Explored</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+
+    <!-- Left: Chart + topic stats -->
+    <div>
+      {% if topic_stats %}
+      <div class="card">
+        <h3>Topic-wise Accuracy</h3>
+        <canvas id="topicChart" height="220"></canvas>
+      </div>
+      {% else %}
+      <div class="card empty-state">
+        📊 Complete a quiz to see your topic-wise accuracy here.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Right: Recent results -->
+    <div class="card">
+      <h3>Recent Quizzes</h3>
+      {% if recent %}
+      <ul class="recent-list mt-2">
+        {% for r in recent %}
+        <li>
+          <span>{{ r.date.strftime('%d %b') if r.date else '—' }}</span>
+          <span class="recent-score text-accent">
+            {{ r.score }}/{{ r.total_questions }}
+            <span class="text-muted" style="font-size:.75rem">
+              ({{ ((r.score/r.total_questions)*100)|int }}%)
+            </span>
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="mt-2 empty-state">No quizzes yet. Take one below!</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Topic Selector -->
+  <div class="mt-4">
+    <h2>Start a Quiz</h2>
+    <div class="topic-grid">
+      <a href="/quiz?topic=all"              class="topic-btn"><div class="topic-icon">🎲</div>Mixed</a>
+      <a href="/quiz?topic=Percentages"      class="topic-btn"><div class="topic-icon">%</div>Percentages</a>
+      <a href="/quiz?topic=Ratios"           class="topic-btn"><div class="topic-icon">⚖️</div>Ratios</a>
+      <a href="/quiz?topic=Speed+%26+Distance" class="topic-btn"><div class="topic-icon">🚗</div>Speed & Dist</a>
+      <a href="/quiz?topic=Time+%26+Work"    class="topic-btn"><div class="topic-icon">🔧</div>Time & Work</a>
+      <a href="/quiz?topic=Probability"      class="topic-btn"><div class="topic-icon">🎯</div>Probability</a>
+      <a href="/quiz?topic=Logical+Reasoning"class="topic-btn"><div class="topic-icon">🧩</div>Logical</a>
+      <a href="/quiz?topic=Verbal"           class="topic-btn"><div class="topic-icon">📖</div>Verbal</a>
+    </div>
+  </div>
+
+</div>
+
+{% if topic_stats %}
+<script>
+const labels   = {{ topic_stats | map(attribute='topic') | list | tojson }};
+const accuracy = {{ topic_stats | map(attribute='correct') | list | tojson }}.map(
+  (c, i) => Math.round((c / {{ topic_stats | map(attribute='total') | list | tojson }}[i]) * 100)
+);
+
+new Chart(document.getElementById("topicChart"), {
+  type: "bar",
+  data: {
+    labels,
+    datasets: [{
+      label: "Accuracy %",
+      data: accuracy,
+      backgroundColor: accuracy.map(v => v >= 70 ? "#22c55e66" : v >= 40 ? "#f5a62366" : "#ef444466"),
+      borderColor:     accuracy.map(v => v >= 70 ? "#22c55e"   : v >= 40 ? "#f5a623"   : "#ef4444"),
+      borderWidth: 2, borderRadius: 8,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: "#7a8aaa" }, grid: { color: "#2a3550" } },
+      y: { min: 0, max: 100, ticks: { color: "#7a8aaa", callback: v => v+"%" }, grid: { color: "#2a3550" } }
+    }
+  }
+});
+</script>
+{% endif %}
+
+</body>
+</html>
